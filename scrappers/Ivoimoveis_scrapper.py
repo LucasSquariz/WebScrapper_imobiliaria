@@ -1,7 +1,7 @@
-from .google_sheets_api import insert_multiple_on_sheet
+from ..google_sheets_api import insert_multiple_on_sheet
 import requests
 import json
-from .utils import calcular_financiamento
+from ..utils import calcular_financiamento
 
 base_url = "https://www.ivoimoveis.com"
 
