@@ -139,9 +139,12 @@ def extract_house_info(url):
         if h4_tag:
             price_text = h4_tag.get_text(strip=True)
             price_text = price_text.replace("R$", "")
+            price_text = price_text.replace("$", "")
             price_text = price_text.replace(".", "")
-            price_text = price_text.replace(",00", "")
-            price_value = price_text
+            price_text = price_text.replace(",", ".")
+            price_text = price_text.split(".")     
+            price_text = price_text[0].strip()       
+            price_value = safe_int(price_text)
 
     # =========================
     # Condomínio
@@ -187,6 +190,10 @@ def extract_house_info(url):
     # =========================
     # Valor total
     # =========================
+    financing = financing or 0
+    furniture_value = furniture_value or 0
+    cond_value = cond_value or 0
+    iptu_value = iptu_value or 0
     total_value = round(financing + furniture_value + cond_value + iptu_value, 2)
 
     # =========================
@@ -246,12 +253,13 @@ def send_to_sheets(house_json):
     return house_json    
 
 def send_to_sheets_test():
-    data = extract_house_info("https://sphouseimoveis.com/comprar/sp/sao-paulo/jabaquara/sala/74375551")
+    data = extract_house_info("https://sphouseimoveis.com/comprar-ou-alugar/sp/sao-paulo/jabaquara/loja/71151006")
     insert_element_on_sheet(data)
     return
 
 def main():
-    #extract_house_info("https://sphouseimoveis.com/comprar/sp/sao-paulo/jabaquara/sala/74375551")
+    #extract_house_info("https://sphouseimoveis.com/comprar/sp/sao-paulo/santa-cecilia/loja/76664747")
+    #send_to_sheets_test()
     json = construct_json() 
     send_to_sheets(json)  
     
