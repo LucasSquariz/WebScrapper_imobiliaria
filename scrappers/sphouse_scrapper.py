@@ -91,19 +91,11 @@ def extract_house_info(url):
             spans = div.find_all("span")
 
             if len(spans) > 1:
-                size_text = spans[1].get_text(strip=True)
-
-                # Remove m²
+                size_text = spans[1].get_text(strip=True)                
                 size_text = size_text.replace("m²", "")
-                size_text = size_text.replace("m2", "")
-
-                # Remove espaços
-                size_text = size_text.strip()
-
-                # Troca vírgula por ponto
-                size_text = size_text.replace(",", ".")
-
-                # Converte
+                size_text = size_text.replace("m2", "")                
+                size_text = size_text.strip()               
+                size_text = size_text.replace(",", ".")                
                 try:
                     size = float(size_text)
                 except:
@@ -225,7 +217,7 @@ def extract_house_info(url):
         "Valor total": total_value,
         "Valor metro": size_price,
         "Link": url,
-        "Site": site_name if 'site_name' in globals() else "",
+        "Site": site_name,
         "Ultima atualizacao": update_date
     }        
     return imovel_info
