@@ -44,7 +44,8 @@ def insert_element_on_sheet(obj):
     row = [data.get(col, "") for col in headers]
     sheet.append_row(row)      
 
-def insert_multiple_on_sheet(obj_list):    
+def insert_multiple_on_sheet(obj_list):   
+    print("entrou no insert_on_multiple_sheets") 
     headers = sheet.row_values(1)
     
     rows = []

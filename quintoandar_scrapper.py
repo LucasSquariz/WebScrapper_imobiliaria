@@ -1,24 +1,26 @@
 import requests
+import time
 import json
 from bs4 import BeautifulSoup
 from datetime import datetime
-from utils import calcular_financiamento,safe_int
+from utils import calcular_financiamento, safe_int, generate_viewport, request_with_retry
 from google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
 
 base_url = "https://www.quintoandar.com.br"
 #search_url = "https://www.quintoandar.com.br/imovel/893457372/comprar/casa-2-quartos-fazenda-da-juta-sao-paulo"
-search_url = "https://apigw.prod.quintoandar.com.br/house-listing-search/v2/search/list"
+api_url = "https://apigw.prod.quintoandar.com.br/house-listing-search/v2/search/list"
 site_name = "Quinto Andar"
 
-def get_house_json_by_page(url, page = 1):
+def get_house_json_by_page(url, viewport, page = 1):
     headers = {
     "Content-Type": "application/json",
     "User-Agent": "Mozilla/5.0",
     "Origin": "https://www.quintoandar.com.br",
-    "Referer": "https://www.quintoandar.com.br/"
+    "Referer": "https://www.quintoandar.com.br/",
+    "x-ab-test": "ab_beakman_search_services_demand_concentration_v1_map_and_ssr_rent_experiment_v2:1,ab_beakman_search_services_demand_sufficiency_v1_sale_experiment:-1,ab_beakman_search_services_demand_sufficiency_v1_sale_experiment_rollout:false,ab_beakman_search_services_demand_sufficiency_v1_sale_experiment_rollout_v1:false,ab_beakman_search_services_demand_sufficiency_v1_sale_experiment_v1:-1,ab_beakman_search_services_feed_filter_search_profile_experiment:0,ab_beakman_search_services_hue_candidate_generation_experiment_v2:-1,ab_beakman_search_services_location_embedding_on_cg_experiment:1,ab_beakman_search_services_open_search_find:-1,ab_beakman_search_services_open_search_migration:false,ab_beakman_search_services_open_search_migration_rollout:false,ab_beakman_search_services_p_click_experiment_sale_v7:1,ab_beakman_search_services_p_click_experiment_v7:1"
     }
 
-    offset_base = 12 
+    offset_base = 500
     offset_final = 0   
     if page and page > 0:
         offset_final = offset_base * page    
@@ -28,12 +30,11 @@ def get_house_json_by_page(url, page = 1):
             "mapShowing": True,
             "listShowing": True,
             "userId": "Fqy90w_8xYrUTOsyYEdZxwDT_AM8mruMSZrtvgnsNbzADSAMMlpwdw",
-            "deviceId": "Fqy90w_8xYrUTOsyYEdZxwDT_AM8mruMSZrtvgnsNbzADSAMMlpwdw",
-            "searchId": "d3754573-d95f-4810-a539-e5541d6dda7f",
+            "deviceId": "Fqy90w_8xYrUTOsyYEdZxwDT_AM8mruMSZrtvgnsNbzADSAMMlpwdw",            
             "numPhotos": 12,
             "isSSR": False
         },
-        "filters": {
+        "filters": {            
             "businessContext": "SALE",
             "blocklist": [],
             "selectedHouses": [],
@@ -43,10 +44,10 @@ def get_house_json_by_page(url, page = 1):
                     "lng": -46.633309
                 },
                 "viewport": {
-                    "east": -46.552799814208974,
-                    "north": -23.453863413347698,
-                    "south": -23.647105568529156,
-                    "west": -46.713818185791006
+                    "east": viewport['east'],
+                    "north": viewport['north'],
+                    "south": viewport['south'],
+                    "west": viewport['west']
                 },
                 "neighborhoods": [],
                 "countryCode": "BR"
@@ -85,7 +86,7 @@ def get_house_json_by_page(url, page = 1):
             "order": "DESC"
         },
         "pagination": {
-            "pageSize": 12,
+            "pageSize": offset_base,
             "offset": offset_final
         },
         "slug": "sao-paulo-sp-brasil",
@@ -129,22 +130,73 @@ def get_house_json_by_page(url, page = 1):
             }
         ],
         "topics": []
-    }    
-
-    response = requests.post(url, headers=headers, json=payload)
-
-    data = response.json()
-    houses_json = data['hits']['hits'] 
-    houses_info = []  
-
-    for house in houses_json:
-        print(house['_id'])
-
+    }   
+    
+    response = request_with_retry(url, headers=headers, payload=payload)    
+    data_j = response.json()
+    #print(data_j)
     if response.status_code == 200:
-        print("deu bom")       
-    return
+        data = response.json()
+        houses_json = data.get('hits', {}).get('hits', [])        
+        houses_info = []  
+        houses_id = set()        
+
+        if houses_json:                          
+            for house in houses_json:  
+                if house and house.get('_source'):                                                    
+                    id_imovel, info = extract_house_info(house)
+                    if id_imovel not in houses_id:
+                        houses_id.add(id_imovel)
+                        houses_info.append(info) 
+            return houses_info            
+        else:
+            print("no data in hits!")
+    else:
+        print(f"--{response.status_code}--")
+        return None 
+
+def get_all_data(): 
+    '''  
+    delta_x = 0.024075508117676
+    delta_y = 0.033876495420023
+    delta = {
+        "x": delta_x,
+        "y": delta_y
+             }
+             ''' 
+    delta = 0.02
+    viewports = generate_viewport(delta)
+    
+    viewport_count = 0
+    all_data = []
+    
+    for view in viewports:        
+        page = 1        
+
+        viewport_count += 1
+        if viewport_count < 0:
+            continue
+        while True:             
+            print(f"Quinto andar page: {page}, viewport_count: {viewport_count}, viewport:{view}")       
+            data = get_house_json_by_page(api_url, view, page)
+            print(data)
+            if not data:
+                break            
+            for info in data:
+                all_data.append(info)
+            page += 1
+            print(f"Quantidade de imóveis: {len(data)}")
+        #time.sleep(60)
+    print(len(all_data))
+    return all_data
 
 def extract_house_info(json):
+    source = json.get('_source')
+
+    if not source:
+        return None, None
+
+    id = 0
     price_value = 0
     cond_value = 0
     iptu_value = 0
@@ -161,6 +213,25 @@ def extract_house_info(json):
     size_price = 0
     url = ""
     update_date = ""
+    
+    id = source.get('id')
+
+    price_value = source.get('salePrice') or 0  
+    # a api da quinto andar manda o condominio junto com o iptu, pesquisar pelo valor correto demandaria entrar em cada link, ou seja, aumentaria muito o tempo de execução
+    cond_value = source.get('iptuPlusCondominium') or 0   
+    size = source.get('area') or 0    
+    car = source.get('parkingSpaces') or 0
+
+    type = source.get('type') or ""
+    street = source.get('address') or ""
+    neighborhood = source.get('neighbourhood') or ""
+    city = source.get('city') or ""
+
+    url = f"{base_url}/imovel/{source['id']}/comprar"
+    financing = calcular_financiamento(price_value) if  price_value > 0 else 0    
+    total_value = round(financing + furniture_value + cond_value + iptu_value, 2)
+    size_price = round(price_value / size, 2) if price_value and size and size > 0 else 0 
+    update_date = datetime.now().strftime("%d-%m-%Y")
 
     imovel_info = {
         "Tipo": type,
@@ -180,11 +251,24 @@ def extract_house_info(json):
         "Link": url,
         "Site": site_name,
         "Ultima atualizacao": update_date
-    }        
+    }       
+    return id, imovel_info
+    
+def scrappy():    
+    houses_json = get_all_data()   
+    insert_multiple_on_sheet(houses_json)    
 
-    return
+def test_viewport():
+    viewports = generate_viewport(delta=0.01)
+
+    print("Total de viewports:", len(viewports))
+
+    for vp in viewports[:5]:
+        print(vp)
 
 def main():
-    extract_house_info(search_url)
+    #test_viewport()
+    #get_all_data()
+    scrappy()
 
 main()
