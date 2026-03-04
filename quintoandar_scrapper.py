@@ -1,9 +1,12 @@
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 from utils import calcular_financiamento, generate_viewport, request_with_retry
 from google_sheets_api import insert_multiple_on_sheet
 
-base_url = "https://www.quintoandar.com.br"
-api_url = "https://apigw.prod.quintoandar.com.br/house-listing-search/v2/search/list"
+load_dotenv()
+base_url = os.getenv("QUINTO_BASE_URL")
+api_url = os.getenv("QUINTO_API_URL")
 site_name = "Quinto Andar"
 
 def get_house_json_by_page(url, viewport, page = 1):
@@ -24,8 +27,8 @@ def get_house_json_by_page(url, viewport, page = 1):
         "context": {
             "mapShowing": True,
             "listShowing": True,
-            "userId": "Fqy90w_8xYrUTOsyYEdZxwDT_AM8mruMSZrtvgnsNbzADSAMMlpwdw",
-            "deviceId": "Fqy90w_8xYrUTOsyYEdZxwDT_AM8mruMSZrtvgnsNbzADSAMMlpwdw",            
+            "userId": os.getenv("QUINTO_USER_ID"),
+            "deviceId": os.getenv("QUINTO_USER_ID"),            
             "numPhotos": 12,
             "isSSR": False
         },
@@ -127,9 +130,8 @@ def get_house_json_by_page(url, viewport, page = 1):
         "topics": []
     }   
     
-    response = request_with_retry(url, headers=headers, payload=payload)    
-    data_j = response.json()
-    #print(data_j)
+    response = request_with_retry(url, headers=headers, payload=payload)        
+    
     if response.status_code == 200:
         data = response.json()
         houses_json = data.get('hits', {}).get('hits', [])        
@@ -150,15 +152,7 @@ def get_house_json_by_page(url, viewport, page = 1):
         print(f"--{response.status_code}--")
         return None 
 
-def get_all_data(): 
-    '''  
-    delta_x = 0.024075508117676
-    delta_y = 0.033876495420023
-    delta = {
-        "x": delta_x,
-        "y": delta_y
-             }
-             ''' 
+def get_all_data():     
     delta = 0.02
     viewports = generate_viewport(delta)
     
@@ -180,8 +174,7 @@ def get_all_data():
             for info in data:
                 all_data.append(info)
             page += 1
-            print(f"Quantidade de imóveis: {len(data)}")
-        #time.sleep(60)
+            print(f"Quantidade de imóveis: {len(data)}")        
     print(len(all_data))
     return all_data
 
