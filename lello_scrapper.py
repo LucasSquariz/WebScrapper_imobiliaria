@@ -2,6 +2,7 @@ import requests
 from utils import calcular_financiamento
 from datetime import datetime
 from google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
+from model.SheetsModel import SheetsModel
 
 base_page = "https://www.lelloimoveis.com.br"
 api_url = "https://apigateway.lelloimoveis.com.br/v3/imoveis/search?interesses=1&finalidades=1&pagina=1&page=1&limit=20"
@@ -59,6 +60,7 @@ def extract_house_info(json):
     update_date = datetime.strptime(cadastro, "%Y-%m-%d").strftime("%d-%m-%Y") or datetime.now().strftime("%d-%m-%Y")
     url = f"{base_page}/imovel/{json['idImovel']}"
 
+    imovel_info = SheetsModel(house_type, street)
     imovel_info = {
         "Tipo": house_type,
         "Endereco": street,
