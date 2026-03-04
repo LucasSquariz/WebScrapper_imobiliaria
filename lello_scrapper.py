@@ -41,6 +41,7 @@ def get_houses():
 def extract_house_info(json):
     furniture_value = 0
     furnished = False
+    interest = False
 
     house_type = json.get('tipoImovel') or ""
     street = json.get('endereco') or ""
@@ -60,26 +61,12 @@ def extract_house_info(json):
     update_date = datetime.strptime(cadastro, "%Y-%m-%d").strftime("%d-%m-%Y") or datetime.now().strftime("%d-%m-%Y")
     url = f"{base_page}/imovel/{json['idImovel']}"
 
-    imovel_info = SheetsModel(house_type, street)
-    imovel_info = {
-        "Tipo": house_type,
-        "Endereco": street,
-        "Bairro": neighborhood,
-        "Cidade": city,
-        "Metragem": size,
-        "Vaga": car,
-        "Mobiliado": furnished,
-        "Preco": price_value,
-        "Condominio": cond_value,
-        "IPTU": iptu_value,
-        "Valor financiamento": financing,
-        "Moveis": furniture_value,
-        "Valor total": total_value,
-        "Valor metro": size_price,
-        "Link": url,
-        "Site": site_name,
-        "Ultima atualizacao": update_date
-    }      
+    sheet_model = SheetsModel(house_type, street, neighborhood, city, size, car, 
+                              furnished, price_value, cond_value, iptu_value, financing, 
+                              furniture_value, total_value, size_price, url, site_name, update_date, interest)
+    imovel_info = sheet_model.to_dict()
+      
+    print (imovel_info)   
     return imovel_info
 
 def test():
