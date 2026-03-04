@@ -1,15 +1,18 @@
 import requests
+import os
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from datetime import datetime
 from utils import calcular_financiamento,safe_int
-from google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
+from google_sheets_api import insert_multiple_on_sheet
+from model.SheetsModel import SheetsModel
 
-base_url = "https://sphouseimoveis.com"
+load_dotenv()
+base_url = os.getenv("SP_BASE_URL")
 site_name = "Sp House"
 
 def get_house_links_by_page(page):
-    search_url = f"https://sphouseimoveis.com/comprar/pagina-{page}/"
-    
+    search_url = f"{os.getenv("SP_SEARCH_URL")}{page}/"    
     response_link = requests.get(search_url)    
 
     soup_house = BeautifulSoup(response_link.text, "html.parser")
@@ -201,25 +204,13 @@ def extract_house_info(url):
     # =========================
     update_date = datetime.now().strftime("%d-%m-%Y")
 
-    imovel_info = {
-        "Tipo": type,
-        "Endereco": street,
-        "Bairro": neighborhood,
-        "Cidade": city,
-        "Metragem": size,
-        "Vaga": car,
-        "Mobiliado": furnished,
-        "Preco": price_value,
-        "Condominio": cond_value,
-        "IPTU": iptu_value,
-        "Valor financiamento": financing,
-        "Moveis": furniture_value,
-        "Valor total": total_value,
-        "Valor metro": size_price,
-        "Link": url,
-        "Site": site_name,
-        "Ultima atualizacao": update_date
-    }        
+    interest = False
+
+    sheet_model = SheetsModel(type, street, neighborhood, city, size, car, 
+                              furnished, price_value, cond_value, iptu_value, financing, 
+                              furniture_value, total_value, size_price, url, site_name, update_date, interest)
+    imovel_info = sheet_model.to_dict()
+           
     return imovel_info
 
 def construct_json():
@@ -238,22 +229,13 @@ def construct_json():
 
     return houses_data
 
-def send_to_sheets(house_json):
-    print("entrou no send_to_sheets")
+def send_to_sheets():    
+    house_json = construct_json() 
     print(len(house_json))
     insert_multiple_on_sheet(house_json)
     return house_json    
 
-def send_to_sheets_test():
-    data = extract_house_info("https://sphouseimoveis.com/comprar-ou-alugar/sp/sao-paulo/jabaquara/loja/71151006")
-    insert_element_on_sheet(data)
-    return
-
-def main():
-    #extract_house_info("https://sphouseimoveis.com/comprar/sp/sao-paulo/santa-cecilia/loja/76664747")
-    #send_to_sheets_test()
-    json = construct_json() 
-    send_to_sheets(json)  
-    
+def main():       
+    send_to_sheets()      
 
 main()

@@ -1,11 +1,14 @@
 import requests
+import os
+from dotenv import load_dotenv
 from utils import calcular_financiamento
 from datetime import datetime
 from google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
 from model.SheetsModel import SheetsModel
 
-base_page = "https://www.lelloimoveis.com.br"
-api_url = "https://apigateway.lelloimoveis.com.br/v3/imoveis/search?interesses=1&finalidades=1&pagina=1&page=1&limit=20"
+load_dotenv()
+base_page = os.getenv("LELLO_BASE_URL")
+api_url = os.getenv("LELLO_API_URL")
 site_name = "Lello Imóveis"
 
 def get_houses():
@@ -13,9 +16,7 @@ def get_houses():
     "Accept": "application/json",
     "Content-Type": "application/json", 
     "Accept-language": "pt-BR,pt;q=0.8",
-    "User-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",   
-    "Origin": "https://www.lelloimoveis.com.br",
-    "Referer": "https://www.lelloimoveis.com.br/",    
+    "User-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",        
     }
 
     houses_json = []   
@@ -81,8 +82,7 @@ def scrappy():
     all_data = get_houses()
     insert_multiple_on_sheet(all_data)
 
-def main():
-    #test()
+def main():    
     scrappy()
 
 main()

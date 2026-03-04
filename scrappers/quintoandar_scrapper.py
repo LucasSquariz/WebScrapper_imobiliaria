@@ -1,8 +1,9 @@
 import os
-from datetime import datetime
 from dotenv import load_dotenv
+from datetime import datetime
 from utils import calcular_financiamento, generate_viewport, request_with_retry
 from google_sheets_api import insert_multiple_on_sheet
+from model.SheetsModel import SheetsModel
 
 load_dotenv()
 base_url = os.getenv("QUINTO_BASE_URL")
@@ -201,7 +202,8 @@ def extract_house_info(json):
     size_price = 0
     url = ""
     update_date = ""
-    
+    interest = False
+
     id = source.get('id')
 
     price_value = source.get('salePrice') or 0  
@@ -221,25 +223,11 @@ def extract_house_info(json):
     size_price = round(price_value / size, 2) if price_value and size and size > 0 else 0 
     update_date = datetime.now().strftime("%d-%m-%Y")
 
-    imovel_info = {
-        "Tipo": type,
-        "Endereco": street,
-        "Bairro": neighborhood,
-        "Cidade": city,
-        "Metragem": size,
-        "Vaga": car,
-        "Mobiliado": furnished,
-        "Preco": price_value,
-        "Condominio": cond_value,
-        "IPTU": iptu_value,
-        "Valor financiamento": financing,
-        "Moveis": furniture_value,
-        "Valor total": total_value,
-        "Valor metro": size_price,
-        "Link": url,
-        "Site": site_name,
-        "Ultima atualizacao": update_date
-    }       
+    sheet_model = SheetsModel(type, street, neighborhood, city, size, car, 
+                              furnished, price_value, cond_value, iptu_value, financing, 
+                              furniture_value, total_value, size_price, url, site_name, update_date, interest)
+    imovel_info = sheet_model.to_dict()
+          
     return id, imovel_info
     
 def scrappy():    
