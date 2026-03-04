@@ -1,13 +1,8 @@
-import requests
-import time
-import json
-from bs4 import BeautifulSoup
 from datetime import datetime
-from utils import calcular_financiamento, safe_int, generate_viewport, request_with_retry
-from google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
+from utils import calcular_financiamento, generate_viewport, request_with_retry
+from google_sheets_api import insert_multiple_on_sheet
 
 base_url = "https://www.quintoandar.com.br"
-#search_url = "https://www.quintoandar.com.br/imovel/893457372/comprar/casa-2-quartos-fazenda-da-juta-sao-paulo"
 api_url = "https://apigw.prod.quintoandar.com.br/house-listing-search/v2/search/list"
 site_name = "Quinto Andar"
 
@@ -256,19 +251,9 @@ def extract_house_info(json):
     
 def scrappy():    
     houses_json = get_all_data()   
-    insert_multiple_on_sheet(houses_json)    
+    insert_multiple_on_sheet(houses_json) 
 
-def test_viewport():
-    viewports = generate_viewport(delta=0.01)
-
-    print("Total de viewports:", len(viewports))
-
-    for vp in viewports[:5]:
-        print(vp)
-
-def main():
-    #test_viewport()
-    #get_all_data()
-    scrappy()
+def main():    
+    scrappy()    
 
 main()
