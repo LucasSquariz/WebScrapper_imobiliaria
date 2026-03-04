@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from utils import calcular_financiamento
 from datetime import datetime
-from google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
+from db.google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
 from model.SheetsModel import SheetsModel
 
 load_dotenv()

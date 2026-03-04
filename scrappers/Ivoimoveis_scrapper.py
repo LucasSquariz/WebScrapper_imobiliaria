@@ -2,7 +2,7 @@ import os
 import requests
 import json
 from dotenv import load_dotenv
-from google_sheets_api import insert_multiple_on_sheet
+from db.google_sheets_api import insert_multiple_on_sheet
 from utils import calcular_financiamento
 from model.SheetsModel import SheetsModel
 
