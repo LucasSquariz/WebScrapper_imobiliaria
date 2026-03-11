@@ -1,4 +1,4 @@
-[![Web Scrapper](Web_Scraper_logo.png)]
+![Web Scrapper](Web_Scraper_logo.png)
 # 🏚️ Web Scrapper imobiliárias
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
@@ -43,3 +43,4 @@ Durante o desenvolvimento, algumas decisões de implementação priorizaram efic
 
 * `venv` – criação e gerenciamento de ambiente virtual para isolamento de dependências
   
+
