@@ -3,6 +3,7 @@ import requests
 import json
 from dotenv import load_dotenv
 from db.google_sheets_api import insert_multiple_on_sheet
+from db.database_sql import add_to_db
 from tools.utils import calcular_financiamento
 from model.SheetsModel import SheetsModel
 
@@ -68,15 +69,18 @@ def construct_json():
             house_info = extract_house_info(info)
             house_json.append(house_info)            
         page_count += 1
-        curr_data = get_houses_data(page_count)
-    
-    insert_multiple_on_sheet(house_json)
+        curr_data = get_houses_data(page_count)    
 
     print(len(house_json))
     return house_json
 
+def scrappy(json):    
+    insert_multiple_on_sheet(json)
+    add_to_db(json)
+
 def main():
-    construct_json()    
+    data = construct_json()
+    scrappy(data) 
 
 if __name__ == "__main__":
     main()

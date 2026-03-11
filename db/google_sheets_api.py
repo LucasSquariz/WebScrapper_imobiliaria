@@ -68,7 +68,8 @@ def insert_multiple_on_sheet(obj_list):
             "Valor m²": obj.get("Valor metro", 0),
             "Link": obj.get("Link", ""),
             "Site": obj.get("Site", ""),
-            "Ultima atualização": obj.get("Ultima atualizacao", "")
+            "Ultima atualização": obj.get("Ultima atualizacao", ""),
+            "Interesse": obj.get("Interesse", False),
         }
 
         row = [data.get(col, "") for col in headers]

@@ -316,3 +316,6 @@ pyrightconfig.json
 config/credentials.json
 *credentials*.json
 *.json
+
+#Dbs
+*.db
