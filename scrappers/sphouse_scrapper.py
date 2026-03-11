@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from datetime import datetime
-from utils import calcular_financiamento,safe_int
+from tools.utils import calcular_financiamento,safe_int
 from db.google_sheets_api import insert_multiple_on_sheet
 from model.SheetsModel import SheetsModel
 

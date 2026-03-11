@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-from utils import calcular_financiamento, generate_viewport, request_with_retry
+from tools.utils import calcular_financiamento, generate_viewport, request_with_retry
 from db.google_sheets_api import insert_multiple_on_sheet
 from model.SheetsModel import SheetsModel
 
