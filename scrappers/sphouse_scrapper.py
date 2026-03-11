@@ -6,6 +6,7 @@ from datetime import datetime
 from tools.utils import calcular_financiamento,safe_int
 from db.google_sheets_api import insert_multiple_on_sheet
 from model.SheetsModel import SheetsModel
+from db.database_sql import add_to_db
 
 load_dotenv()
 base_url = os.getenv("SP_BASE_URL")
@@ -229,13 +230,14 @@ def construct_json():
 
     return houses_data
 
-def send_to_sheets():    
-    house_json = construct_json() 
-    print(len(house_json))
-    insert_multiple_on_sheet(house_json)
-    return house_json    
+def scrappy():    
+    houses_json = construct_json() 
+    print(len(houses_json))  
+    insert_multiple_on_sheet(houses_json) 
+    add_to_db(houses_json)
 
 def main():       
-    send_to_sheets()      
+    scrappy()      
 
-main()
+if __name__ == "__main__":
+    main()

@@ -4,6 +4,7 @@ from datetime import datetime
 from tools.utils import calcular_financiamento, generate_viewport, request_with_retry
 from db.google_sheets_api import insert_multiple_on_sheet
 from model.SheetsModel import SheetsModel
+from db.database_sql import add_to_db
 
 load_dotenv()
 base_url = os.getenv("QUINTO_BASE_URL")
@@ -233,8 +234,10 @@ def extract_house_info(json):
 def scrappy():    
     houses_json = get_all_data()   
     insert_multiple_on_sheet(houses_json) 
+    add_to_db(houses_json)
 
 def main():    
     scrappy()    
 
-main()
+if __name__ == "__main__":
+    main()

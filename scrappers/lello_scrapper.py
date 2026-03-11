@@ -5,6 +5,7 @@ from tools.utils import calcular_financiamento
 from datetime import datetime
 from db.google_sheets_api import insert_multiple_on_sheet, insert_element_on_sheet
 from model.SheetsModel import SheetsModel
+from db.database_sql import add_to_db
 
 load_dotenv()
 base_page = os.getenv("LELLO_BASE_URL")
@@ -81,8 +82,10 @@ def test():
 def scrappy():    
     all_data = get_houses()
     insert_multiple_on_sheet(all_data)
+    add_to_db(all_data)
 
 def main():    
     scrappy()
 
-main()
+if __name__ == "__main__":
+    main()

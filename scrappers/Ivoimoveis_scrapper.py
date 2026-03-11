@@ -74,13 +74,13 @@ def construct_json():
     print(len(house_json))
     return house_json
 
-def scrappy(json):    
-    insert_multiple_on_sheet(json)
-    add_to_db(json)
-
-def main():
+def scrappy():    
     data = construct_json()
-    scrappy(data) 
+    insert_multiple_on_sheet(data)
+    add_to_db(data)
+
+def main():    
+    scrappy() 
 
 if __name__ == "__main__":
     main()
